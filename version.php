@@ -15,8 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   plugintype_pluginname
- * @copyright 2020, You Name <your@email.address>
+ * @package   quiz_exportresults
+ * @copyright 2020, Sven Waser <sven.waser@ksso.ch>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,4 +27,4 @@ $plugin->version = 2022040300;
 $plugin->requires = 2014051200;
 $plugin->component = 'quiz_exportresults';
 $plugin->maturity = MATURITY_ALPHA;
-$plugin->release = 'v1.0.0'; 
+$plugin->release = 'v1.0.0';
