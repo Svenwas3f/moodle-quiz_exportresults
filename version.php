@@ -16,7 +16,7 @@
 
 /**
  * @package   quiz_exportresults
- * @copyright 2020, Sven Waser <sven.waser@ksso.ch>
+ * @copyright 2022, Sven Waser <sven.waser@ksso.ch>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
