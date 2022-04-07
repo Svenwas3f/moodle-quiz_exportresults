@@ -20,12 +20,11 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// Links
-// https://docs.moodle.org/dev/Groups_API
-
-
 class quiz_exportresults_report extends quiz_default_report {
-  public function display($cm, $quiz, $course) {
+  public function display($quiz, $cm, $course) {
+    // Get database
+    global $DB;
+
     // Display page
     $this->print_header_and_tabs($cm, $course, $quiz, 'quiz_exportresults');
 
@@ -33,9 +32,9 @@ class quiz_exportresults_report extends quiz_default_report {
 
     // Check if groups activated
     if(groups_get_course_groupmode($course) != 0) {
-      $groups = groups_get_all_groups($course->id); // Get all groups
+      $groups = groups_get_all_groups($course->id); // Get all groups / groups_get_user_groups
     }else {
-      $groups = array(); // No groups activated
+      $groups = array((object) array("name" => $course->fullname) ); // No groups activated
     }
 
     /////////////////////////// Generate export ///////////////////////////
@@ -43,15 +42,52 @@ class quiz_exportresults_report extends quiz_default_report {
     $tempPath = make_request_directory() . "/plugins/exportresults/" . substr(md5(time()), 0, 8);
 
     // Loop groups
+    // TODO: Support Quizes without a group
     foreach($groups as $group) {
       // Temporary path to group folder
-      $groupTempPath = $tempPath . "/" . $group->id;
+      $groupTempPath = $tempPath . "/" . $group->name;
 
-      echo $groupTempPath;
+      // Handle attempts
+      foreach(groups_get_members($group->id) as $user_to_handle) {
+        // Options: highest grade, first attempt, last attempts, all attempts
+        switch('all') {
+          case 'highest': // Highest attempt
+            $params['quiz'] = $quiz->id; // Quiz ID
+            $params['userid'] = 2; // User ID
 
-      // Handle attempts (Loop)
+            $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'sumgrades DESC', '*', 0, 1); // Request attempts
+            break;
+          case 'first': // first attempt
+            $params['quiz'] = $quiz->id; // Quiz ID
+            $params['userid'] = 2; // User ID
+
+            $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt ASC', '*', 0, 1); // Request attempts
+            break;
+          case 'last': // Last attempt
+            $params['quiz'] = $quiz->id; // Quiz ID
+            $params['userid'] = 2; // User ID
+
+            $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC', '*', 0, 1); // Request attempts
+            break;
+          case 'all': // All attempts
+          default:
+            $params['quiz'] = $quiz->id; // Quiz ID
+            $params['userid'] = 2; // User ID
+
+            $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC'); // Request attempts
+            break;
+        }
+      }
+
+      // Get acctual value
+      foreach($attempts as $attempt) {
+        $params['id'] = $attempt->id; // Attempt ID
+
+        $attempt_values = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
+      }
 
       // Generate files
+
     }
 
     // Convert to zip and enable downlod
@@ -61,7 +97,7 @@ class quiz_exportresults_report extends quiz_default_report {
 
     ///////////////// TEST ENVIRONMENT /////////////////
     echo '<pre>';
-      var_dump($groups);
+      var_dump($attempt_values);
     echo '</pre>';
   }
 }
