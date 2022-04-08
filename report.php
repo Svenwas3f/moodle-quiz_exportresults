@@ -39,7 +39,7 @@ class quiz_exportresults_report extends quiz_default_report {
 
     /////////////////////////// Generate export ///////////////////////////
     // Get current export path
-    $tempPath = make_request_directory() . "/plugins/exportresults/" . substr(md5(time()), 0, 8);
+    $tempPath = make_request_directory() . "/plugins/exportresults/" . substr(md5(time()), 0, 8); // Remove files 
 
     // Loop groups
     // TODO: Support Quizes without a group
