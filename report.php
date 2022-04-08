@@ -42,37 +42,42 @@ class quiz_exportresults_report extends quiz_default_report {
     $tempPath = make_request_directory() . "/plugins/exportresults/" . substr(md5(time()), 0, 8); // Remove files 
 
     // Loop groups
-    // TODO: Support Quizes without a group
     foreach($groups as $group) {
       // Temporary path to group folder
       $groupTempPath = $tempPath . "/" . $group->name;
 
       // Handle attempts
-      foreach(groups_get_members($group->id) as $user_to_handle) {
+      if(groups_get_course_groupmode($course)) {
+        $members = groups_get_members($group->id); // Get members of group
+      }else {
+        $members = ''; // Get members of course
+      }
+
+      foreach($members as $member) {
         // Options: highest grade, first attempt, last attempts, all attempts
         switch('all') {
           case 'highest': // Highest attempt
             $params['quiz'] = $quiz->id; // Quiz ID
-            $params['userid'] = 2; // User ID
+            $params['userid'] = $member->id; // User ID
 
             $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'sumgrades DESC', '*', 0, 1); // Request attempts
             break;
           case 'first': // first attempt
             $params['quiz'] = $quiz->id; // Quiz ID
-            $params['userid'] = 2; // User ID
+            $params['userid'] = $member->id; // User ID
 
             $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt ASC', '*', 0, 1); // Request attempts
             break;
           case 'last': // Last attempt
             $params['quiz'] = $quiz->id; // Quiz ID
-            $params['userid'] = 2; // User ID
+            $params['userid'] = $member->id; // User ID
 
             $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC', '*', 0, 1); // Request attempts
             break;
           case 'all': // All attempts
           default:
             $params['quiz'] = $quiz->id; // Quiz ID
-            $params['userid'] = 2; // User ID
+            $params['userid'] = $member->id; // User ID
 
             $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC'); // Request attempts
             break;
