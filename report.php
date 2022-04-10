@@ -45,13 +45,23 @@ class quiz_exportresults_report extends quiz_default_report {
     }
 
     /////////////////////////// Generate export ///////////////////////////
-    // Get current export path
-    $tempPath = make_request_directory() . "/plugins/exportresults/" . substr(md5(time()), 0, 8); // Remove files
+    $path = make_request_directory() . "/exporsubmissionplugin/export/";
+    $filename = 'export.zip';
+
+    echo $path;
+
+    $export = new ZipArchive();
+    $export->open($path . $filename, ZipArchive::CREATE); // Initialise zip
+    $export->addFromString("test.txt", "Hello World");
+
+    // $export->addEmptyDir("TEST");
+
+    // $export->close();
 
     // Loop groups
     foreach($groups as $group) {
-      // Temporary path to group folder
-      $groupTempPath = $tempPath . "/" . $group->name;
+      // Add folder to export zip
+      // $export->addEmptyDir($group->name);
 
       // Handle attempts
       if(groups_get_course_groupmode($course)) {
@@ -94,32 +104,61 @@ class quiz_exportresults_report extends quiz_default_report {
         // Get acctual value
         foreach($attempts as $attempt) {
           $params['id'] = $attempt->id; // Attempt ID
-          $attempt_values = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
+          $attempt_value = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
+
+          // Prepare values for odt
+          $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'text:p';
+          $content[0]["val"][0]["val"][0]["val"][0]["att"] = array('text:style-name' => 'Standard');
+          $content[0]["val"][0]["val"][0]["val"][0]["val"] = 'Testinhalt';
+
+          $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
+          $meta[0]["val"][0]["val"][0]["val"] = 'Moodle Exportresults Plugin';
+          $meta[0]["val"][0]["val"][1]["name"] = 'meta:creation-date';
+          $meta[0]["val"][0]["val"][1]["val"] = date("Y-m-d\TH:i:sp");
+          $meta[0]["val"][0]["val"][3]["name"] = 'meta:creator';
+          $meta[0]["val"][0]["val"][3]["val"] = 'Moodle Exportresults Plugin';
+
+          $styles[0]["val"][0]["val"][0]["name"] = 'office:automatic-styles';
+          $styles[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'fo:margin-bottom';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][0]["val"] = '5cm';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][1]["name"] = 'fo:margin-top';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][1]["val"] = '5cm';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][2]["name"] = 'fo:margin-left';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][2]["val"] = '5cm';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][3]["name"] = 'fo:margin-right';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][3]["val"] = '5cm';
+          $styles[0]["val"][0]["val"][1]["name"] = 'office:styles';
+          $styles[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:default-style';
+          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
+          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"] = array("fo:font-size" => '20pt');
 
           // Generate odt
+          $odt = $this->odt($content, $meta, array(), $styles);
+
+          // Copy odt into download Zip
+          // $fs = get_file_storage();
+          //
+          // // Prepare file record object
+          // $fileinfo = array(
+          //     'contextid' => $context->id, // ID of context
+          //     'component' => 'mod_mymodule',     // usually = table name
+          //     'filearea' => 'myarea',     // usually = table name
+          //     'itemid' => 0,               // usually = ID of row in table
+          //     'filepath' => '/',           // any path beginning and ending in /
+          //     'filename' => 'myfile.txt'); // any filename
+          //
+          // // Create file containing text 'hello world'
+          // $fs->create_file_from_string($fileinfo, 'hello world');
 
           // Generate pdf
         }
       }
-
-      // Generate download file
-
     }
-
-    $path = make_request_directory() . "/exporsubmissionplugin/";
-    echo $path;
-
-    echo $this->odt($path);
 
     // Convert to zip and enable downlod
     // https://docs.moodle.org/dev/File_API
-
-
-
-    ///////////////// TEST ENVIRONMENT /////////////////
-    echo '<pre>';
-      // var_dump($groups);
-    echo '</pre>';
   }
 
   /**
@@ -130,7 +169,7 @@ class quiz_exportresults_report extends quiz_default_report {
    * @param array $newstyles
    * @return string filepath
    */
-  protected function odt($path, $newcontent = array(), $newmeta = array(), $newsettings = array(), $newstyles = array()) {
+  protected function odt($newcontent = array(), $newmeta = array(), $newsettings = array(), $newstyles = array()) {
     // Default array for content.xml
     $content["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
     $content[0]["name"] = 'office:document-content';
@@ -141,9 +180,6 @@ class quiz_exportresults_report extends quiz_default_report {
                         );
     $content[0]["val"][0]["name"] = 'office:body';
     $content[0]["val"][0]["val"][0]["name"] = 'office:text';
-    $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'text:p';
-    $content[0]["val"][0]["val"][0]["val"][0]["atts"] = array('text:style-name' => 'Standard');
-    $content[0]["val"][0]["val"][0]["val"][0]["val"] = "Hallo Nico";
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -154,12 +190,6 @@ class quiz_exportresults_report extends quiz_default_report {
                           'office:version' => 1.2,
                         );
     $meta[0]["val"][0]["name"] = 'office:meta';
-    $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
-    $meta[0]["val"][0]["val"][0]["val"] = 'Moodle';
-    $meta[0]["val"][0]["val"][1]["name"] = 'meta:creation-date';
-    $meta[0]["val"][0]["val"][1]["val"] = '2022-04-08T14:47:38.57';
-    $meta[0]["val"][0]["val"][3]["name"] = 'meta:creator';
-    $meta[0]["val"][0]["val"][3]["val"] = 'Moodle';
 
     // Default array for settings.xml
     $settings["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -216,17 +246,17 @@ class quiz_exportresults_report extends quiz_default_report {
                                     );
 
     // Extend arrays
-    $content = array_merge_recursive($content, $newcontent);
-    $meta = array_merge_recursive($meta, $newmeta);
-    $settings = array_merge_recursive($settings, $newsettings);
-    $styles = array_merge_recursive($styles, $newstyles);
+    $content = array_replace_recursive($content, $newcontent);
+    $meta = array_replace_recursive($meta, $newmeta);
+    $settings = array_replace_recursive($settings, $newsettings);
+    $styles = array_replace_recursive($styles, $newstyles);
 
     // Generate xml
-    $zipname = 'test.odt';
+    $path = make_request_directory() . "/exporsubmissionplugin/";
+    $filename = 'result.odt';
     mkdir($path, 0777, true); // Generate temp path
-
     $odt = new ZipArchive();
-    $odt->open($path . '/' . $zipname, ZipArchive::CREATE); // Initialise zip/odt
+    $odt->open($path . $filename, ZipArchive::CREATE); // Initialise zip/odt
 
     $odt->addFromString('content.xml', $this->array_to_xml($content)); // Content
     $odt->addFromString('meta.xml', $this->array_to_xml($meta)); // meta
@@ -239,6 +269,9 @@ class quiz_exportresults_report extends quiz_default_report {
     $odt->addFromString("META-INF/manifest.xml", $this->array_to_xml($manifest));
 
     $odt->close();
+
+    // Return temp path to copy
+    return $path . '/' . $filename;
   }
 
   /**
@@ -256,13 +289,11 @@ class quiz_exportresults_report extends quiz_default_report {
       if($key == "declaration") {
         $xml .= $info;
       }else {
-        // Prepare attributes
         if(array_key_exists('att', $info) && is_array($info["att"])) {
           $atts = " "; // Initial whitspace
-          $atts .= implode(' ', array_map(function ($v, $k) {return $k . '="' . $v . '"';}, $info["att"], array_keys($info["att"])));
+          $atts .= implode(' ', array_map(function ($v, $k) {return $k . '="' . $v . '"';}, $info["att"], array_keys($info["att"]))); // Get all attributes
         }
 
-        // Prepare end
         if(array_key_exists('val', $info) && empty($info["val"]) && $info["val"] != 0) {
           $endTag = false; // End has no closing tag
         }else {
