@@ -45,23 +45,17 @@ class quiz_exportresults_report extends quiz_default_report {
     }
 
     /////////////////////////// Generate export ///////////////////////////
-    $path = make_request_directory() . "/exporsubmissionplugin/export/";
+    $path = make_request_directory() . "/sexporsubmissionplugin/export/";
     $filename = 'export.zip';
-
-    echo $path;
+    mkdir($path, 0777, true); // Generate temp path
 
     $export = new ZipArchive();
     $export->open($path . $filename, ZipArchive::CREATE); // Initialise zip
-    $export->addFromString("test.txt", "Hello World");
-
-    // $export->addEmptyDir("TEST");
-
-    // $export->close();
 
     // Loop groups
     foreach($groups as $group) {
       // Add folder to export zip
-      // $export->addEmptyDir($group->name);
+      $export->addEmptyDir($group->name);
 
       // Handle attempts
       if(groups_get_course_groupmode($course)) {
@@ -72,7 +66,6 @@ class quiz_exportresults_report extends quiz_default_report {
 
       foreach($members as $member) {
         // Options: highest grade, first attempt, last attempts, all attempts
-        // quiz_get_grading_options
         switch('all') {
           case 'highest': // Highest attempt
             $params['quiz'] = $quiz->id; // Quiz ID
@@ -106,10 +99,21 @@ class quiz_exportresults_report extends quiz_default_report {
           $params['id'] = $attempt->id; // Attempt ID
           $attempt_value = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
 
+          // Options:
+          // download attempts
+          // Include question
+          // Groups selection
+          //
+          // Word:
+          // Margin
+          // Font Size
+          // Line Height
+          // Font Family
+
           // Prepare values for odt
           $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'text:p';
           $content[0]["val"][0]["val"][0]["val"][0]["att"] = array('text:style-name' => 'Standard');
-          $content[0]["val"][0]["val"][0]["val"][0]["val"] = 'Testinhalt';
+          $content[0]["val"][0]["val"][0]["val"][0]["val"] = $attempt_value[3]->responsesummary;
 
           $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
           $meta[0]["val"][0]["val"][0]["val"] = 'Moodle Exportresults Plugin';
@@ -120,44 +124,52 @@ class quiz_exportresults_report extends quiz_default_report {
 
           $styles[0]["val"][0]["val"][0]["name"] = 'office:automatic-styles';
           $styles[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout';
+          $styles[0]["val"][0]["val"][0]["val"][0]["att"] = array('style:name' => 'Mpm1');
           $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'fo:margin-bottom';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][0]["val"] = '5cm';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][1]["name"] = 'fo:margin-top';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][1]["val"] = '5cm';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][2]["name"] = 'fo:margin-left';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][2]["val"] = '5cm';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][3]["name"] = 'fo:margin-right';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["val"][3]["val"] = '5cm';
+          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["att"] = array(
+                                                                        'fo:page-width' => '21.001cm',
+                                                                        'fo:page-height' => '29.7cm',
+                                                                        'fo:margin-bottom' => '5cm',
+                                                                        'fo:margin-top' => '5cm',
+                                                                        'fo:margin-left' => '5cm',
+                                                                        'fo:margin-right' => '5cm',
+                                                                      );
           $styles[0]["val"][0]["val"][1]["name"] = 'office:styles';
           $styles[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:default-style';
+          $styles[0]["val"][0]["val"][1]["val"][0]["att"] = array('style:family' => 'paragraph');
           $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
-          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"] = array("fo:font-size" => '20pt');
+          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"] = array(
+                                                                        'fo:font-size' => '20pt',
+                                                                        'style:font-name' => 'Arial',
+                                                                      );
 
-          // Generate odt
+          // Generate odt and add to export
           $odt = $this->odt($content, $meta, array(), $styles);
 
-          // Copy odt into download Zip
-          // $fs = get_file_storage();
-          //
-          // // Prepare file record object
-          // $fileinfo = array(
-          //     'contextid' => $context->id, // ID of context
-          //     'component' => 'mod_mymodule',     // usually = table name
-          //     'filearea' => 'myarea',     // usually = table name
-          //     'itemid' => 0,               // usually = ID of row in table
-          //     'filepath' => '/',           // any path beginning and ending in /
-          //     'filename' => 'myfile.txt'); // any filename
-          //
-          // // Create file containing text 'hello world'
-          // $fs->create_file_from_string($fileinfo, 'hello world');
-
-          // Generate pdf
+          $pattern = '/[^A-Za-z0-9-_]/'; // Pattern to secure filename
+          $export->addFile($odt, $group->name . "/" . preg_replace($pattern, '', $member->username) . "_" . preg_replace($pattern, '', $member->firstname) . "_" . preg_replace($pattern, '', $member->lastname) . ".odt");
         }
       }
     }
 
     // Convert to zip and enable downlod
+    $export->close();
+
+    // Copy odt into download Zip
+    // $fs = get_file_storage();
+
+    // Prepare file record object
+    // $fileinfo = array(
+    //     'contextid' => $context->id, // ID of context
+    //     'component' => 'mod_mymodule',     // usually = table name
+    //     'filearea' => 'myarea',     // usually = table name
+    //     'itemid' => 0,               // usually = ID of row in table
+    //     'filepath' => '/',           // any path beginning and ending in /
+    //     'filename' => 'myfile.txt'); // any filename
+    //
+    // // Create file containing text 'hello world'
+    // $fs->create_file_from_string($fileinfo, 'hello world');
+    copy($path . $filename, 'C:\Users\svenw\Downloads\export.zip');
     // https://docs.moodle.org/dev/File_API
   }
 
@@ -207,6 +219,7 @@ class quiz_exportresults_report extends quiz_default_report {
     $styles[0]["att"] = array(
                           'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
                           'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+                          'xmlns:fo' => 'urn:oasis:nasmes:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
                           'office:version' => 1.2,
                         );
     $styles[0]["val"][0]["name"] = 'office:styles';
@@ -253,7 +266,7 @@ class quiz_exportresults_report extends quiz_default_report {
 
     // Generate xml
     $path = make_request_directory() . "/exporsubmissionplugin/";
-    $filename = 'result.odt';
+    $filename = 'generated.odt';
     mkdir($path, 0777, true); // Generate temp path
     $odt = new ZipArchive();
     $odt->open($path . $filename, ZipArchive::CREATE); // Initialise zip/odt
