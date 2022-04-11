@@ -31,12 +31,6 @@ class quiz_exportresults_report extends quiz_default_report {
     // Get database
     global $DB, $context;
 
-    // Display page
-    $this->print_header_and_tabs($cm, $course, $quiz, 'quiz_exportresults');
-
-    // Display form (introduced at the end)
-    //quiz_has_attempts
-
     // Check if groups activated
     if(groups_get_course_groupmode($course) != 0) {
       $groups = groups_get_all_groups($course->id); // Get all groups / groups_get_user_groups
@@ -99,21 +93,10 @@ class quiz_exportresults_report extends quiz_default_report {
           $params['id'] = $attempt->id; // Attempt ID
           $attempt_value = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
 
-          // Options:
-          // download attempts
-          // Include question
-          // Groups selection
-          //
-          // Word:
-          // Margin
-          // Font Size
-          // Line Height
-          // Font Family
-
           // Prepare values for odt
           $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'text:p';
           $content[0]["val"][0]["val"][0]["val"][0]["att"] = array('text:style-name' => 'Standard');
-          $content[0]["val"][0]["val"][0]["val"][0]["val"] = $attempt_value[3]->responsesummary;
+          $content[0]["val"][0]["val"][0]["val"][0]["val"] = array_values($attempt_value)[0]->responsesummary . "Das ist ein langer text um den Zeileunterschied zu erkennen. Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla BlaBla Bla BlaBla Bla Bla Bla Bla Bla Bla Bla Bla Bla Bla BlaBla Bla Bla";
 
           $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
           $meta[0]["val"][0]["val"][0]["val"] = 'Moodle Exportresults Plugin';
@@ -122,26 +105,36 @@ class quiz_exportresults_report extends quiz_default_report {
           $meta[0]["val"][0]["val"][3]["name"] = 'meta:creator';
           $meta[0]["val"][0]["val"][3]["val"] = 'Moodle Exportresults Plugin';
 
-          $styles[0]["val"][0]["val"][0]["name"] = 'office:automatic-styles';
-          $styles[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout';
-          $styles[0]["val"][0]["val"][0]["val"][0]["att"] = array('style:name' => 'Mpm1');
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
-          $styles[0]["val"][0]["val"][0]["val"][0]["val"][0]["att"] = array(
-                                                                        'fo:page-width' => '21.001cm',
-                                                                        'fo:page-height' => '29.7cm',
-                                                                        'fo:margin-bottom' => '5cm',
-                                                                        'fo:margin-top' => '5cm',
-                                                                        'fo:margin-left' => '5cm',
-                                                                        'fo:margin-right' => '5cm',
-                                                                      );
-          $styles[0]["val"][0]["val"][1]["name"] = 'office:styles';
-          $styles[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:default-style';
-          $styles[0]["val"][0]["val"][1]["val"][0]["att"] = array('style:family' => 'paragraph');
-          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
-          $styles[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"] = array(
-                                                                        'fo:font-size' => '20pt',
-                                                                        'style:font-name' => 'Arial',
-                                                                      );
+          $styles[0]["val"][0]["name"] = 'office:font-face-decls';
+          $styles[0]["val"][0]["val"][0]["name"] = 'style:font-face';
+          $styles[0]["val"][0]["val"][0]["att"]["style:name"] = 'Times New Roman';
+          $styles[0]["val"][0]["val"][0]["att"]["svg:font-family"] = '&apos;Times New Roman&apos;';
+          $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
+          $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Arial';
+          $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Arial';
+
+          $styles[0]["val"][1]["name"] = 'office:styles';
+          $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
+          $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
+          $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
+          $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = '20pt'; // Fontsize
+          $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = 'Arial'; // Font family
+          $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+          $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = '180%'; // line height
+
+          $styles[0]["val"][2]["name"] = 'office:automatic-styles';
+          $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
+          $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
+          $styles[0]["val"][2]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
+          $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottm"] = '5cm'; // Margin
+          $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = '5cm'; // Margin
+          $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = '5cm'; // Margin
+          $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = '5cm'; // Margin
+
+          $styles[0]["val"][3]["name"] = 'office:master-styles';
+          $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
+          $styles[0]["val"][3]["val"][0]["att"]["style:name"] = 'Standard';
+          $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
 
           // Generate odt and add to export
           $odt = $this->odt($content, $meta, array(), $styles);
@@ -156,21 +149,36 @@ class quiz_exportresults_report extends quiz_default_report {
     $export->close();
 
     // Copy odt into download Zip
-    // $fs = get_file_storage();
+    $fs = get_file_storage();
 
     // Prepare file record object
-    // $fileinfo = array(
-    //     'contextid' => $context->id, // ID of context
-    //     'component' => 'mod_mymodule',     // usually = table name
-    //     'filearea' => 'myarea',     // usually = table name
-    //     'itemid' => 0,               // usually = ID of row in table
-    //     'filepath' => '/',           // any path beginning and ending in /
-    //     'filename' => 'myfile.txt'); // any filename
-    //
-    // // Create file containing text 'hello world'
-    // $fs->create_file_from_string($fileinfo, 'hello world');
-    copy($path . $filename, 'C:\Users\svenw\Downloads\export.zip');
-    // https://docs.moodle.org/dev/File_API
+    $fileinfo = array(
+        'contextid' => $context->id, // ID of context
+        'component' => 'quiz_exportresults',     // usually = table name
+        'filearea' => 'export',     // usually = table name
+        'itemid' => $quiz->id,               // usually = ID of row in table
+        'filepath' => '/',           // any path beginning and ending in /
+        'filename' => 'export.zip'); // any filename
+
+    if($fs->file_exists($fileinfo["contextid"], $fileinfo["component"], $fileinfo["filearea"], $fileinfo["itemid"], $fileinfo["filepath"], $fileinfo["filename"])) {
+      $fs->get_file($fileinfo['contextid'], $fileinfo['component'], $fileinfo['filearea'], $fileinfo['itemid'], $fileinfo['filepath'], $fileinfo['filename'])->delete(); // Remove file
+    }
+
+    // Create file in File API
+    $exportfile = $fs->create_file_from_pathname($fileinfo, $path . $filename);
+
+    // Serve to user
+    // send_stored_file($exportfile, 86400, 0, true);
+
+    // Display page
+    $this->print_header_and_tabs($cm, $course, $quiz, 'quiz_exportresults');
+
+
+    if(quiz_has_attempts($quiz->id)) {
+      // Display form
+    }else {
+      // Display message
+    }
   }
 
   /**
@@ -219,10 +227,10 @@ class quiz_exportresults_report extends quiz_default_report {
     $styles[0]["att"] = array(
                           'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
                           'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
-                          'xmlns:fo' => 'urn:oasis:nasmes:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+                          'xmlns:svg' => 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0',
                           'office:version' => 1.2,
                         );
-    $styles[0]["val"][0]["name"] = 'office:styles';
 
     // Default array for META-INF/manifest.xml
     $manifest["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -290,7 +298,7 @@ class quiz_exportresults_report extends quiz_default_report {
   /**
    * Function to generate xml
    * @param array $array
-   * @return string
+   * @return string xml string
    */
   private function array_to_xml($array) {
     // Start xml
