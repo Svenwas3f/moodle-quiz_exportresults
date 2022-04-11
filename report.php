@@ -342,9 +342,6 @@ class quiz_exportresults_report extends quiz_default_report {
       // Check declaration
       if($key === "declaration") {
         $xml .= $info;
-        echo '<pre>';
-          var_dump($info);
-        echo '</pre>';
       }else {
         if(array_key_exists('att', $info) && is_array($info["att"])) {
           $atts = " "; // Initial whitspace
