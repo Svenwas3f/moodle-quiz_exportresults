@@ -102,6 +102,8 @@ class quiz_exportresults_report extends quiz_default_report {
             $params['id'] = $attempt->id; // Attempt ID
             $questions = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
 
+            var_dump($questions);
+
             // Prepare values for odt
             $count = 0;
             foreach($questions as $question) {
