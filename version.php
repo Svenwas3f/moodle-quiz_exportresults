@@ -26,5 +26,5 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version = 2022040300;
 $plugin->requires = 2014051200;
 $plugin->component = 'quiz_exportresults';
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v1.0.0';
