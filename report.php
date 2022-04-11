@@ -42,7 +42,9 @@ class quiz_exportresults_report extends quiz_default_report {
       if(groups_get_course_groupmode($course) == false || empty($data->groups)) {
         $groups = array((object) array("id" => 0, "courseid" => $course->id, "name" => $course->fullname) ); // No groups activated
       }else {
-        $groups = $data->groups;
+        foreach($data->groups as $group) {
+          $groups[] = groups_get_group($group);
+        }
       }
 
       /////////////////////////// Generate export ///////////////////////////
