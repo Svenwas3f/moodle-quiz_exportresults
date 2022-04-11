@@ -145,9 +145,9 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
             $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
             $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = $fontsize; // Fontsize
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = 'Arial'; // Font family
-            $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = $data->fontfamily; // Font family
+            $styles[0]["val"][1]["val"][0]["val"][1]["name"] = 'style:paragraph-properties';
+            $styles[0]["val"][1]["val"][0]["val"][1]["att"]['fo:line-height'] = $lineheight; // line height
 
             $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Prepare values
             $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Prepare values
@@ -166,7 +166,7 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
             $styles[0]["val"][3]["val"][0]["att"]["style:name"] = 'Standard';
             $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
-            
+
             // Generate odt and add to export
             $odt = $this->odt(($content ?? array()), $meta, array(), $styles);
 

@@ -42,6 +42,7 @@ $string["exportresults_fileoption_marginright"] = 'Seitenrand rechts (cm)';
 $string["exportresults_fileoption_marginbottom"] = 'Seitenrand untent (cm)';
 $string["exportresults_fileoption_marginleft"] = 'Seitenrand links (cm)';
 $string["exportresults_fileoption_fontsize"] = 'Schriftgrösse (pt)';
+$string["exportresults_fileoption_fontfamily"] = 'Schriftart';
 $string["exportresults_fileoption_lineheight"] = 'Zeilenabstand';
 $string["exportresutls_submit"] = "Exportieren";
 

@@ -42,6 +42,7 @@ $string["exportresults_fileoption_marginright"] = 'Margin right (cm)';
 $string["exportresults_fileoption_marginbottom"] = 'Margin bottom (cm)';
 $string["exportresults_fileoption_marginleft"] = 'Margin left (cm)';
 $string["exportresults_fileoption_fontsize"] = 'Font size (pt)';
+$string["exportresults_fileoption_fontfamily"] = 'Font family';
 $string["exportresults_fileoption_lineheight"] = 'Line height';
 $string["exportresutls_submit"] = "Export";
 
