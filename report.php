@@ -339,10 +339,10 @@ class quiz_exportresults_report extends quiz_default_report {
 
     // Loop array
     foreach($array as $key=>$info) {
-      echo $key;
       // Check declaration
       if($key == "declaration") {
         $xml .= $info;
+        echo $key;
       }else {
         if(array_key_exists('att', $info) && is_array($info["att"])) {
           $atts = " "; // Initial whitspace
