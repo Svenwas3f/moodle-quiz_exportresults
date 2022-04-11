@@ -168,7 +168,7 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
 
             // Generate odt and add to export
-            $odt = $this->odt($content ?? array(), $meta, array(), $styles);
+            $odt = $this->odt(($content ?? array()), $meta, array(), $styles);
 
             $pattern = '/[^A-Za-z0-9-_]/'; // Pattern to secure filename
             $export->addFile($odt, $group->name . "/" . preg_replace($pattern, '', $member->username) . "_" . preg_replace($pattern, '', $member->firstname) . "_" . preg_replace($pattern, '', $member->lastname) . ".odt");
@@ -342,7 +342,6 @@ class quiz_exportresults_report extends quiz_default_report {
       // Check declaration
       if($key == "declaration") {
         $xml .= $info;
-        echo $key;
       }else {
         if(array_key_exists('att', $info) && is_array($info["att"])) {
           $atts = " "; // Initial whitspace
