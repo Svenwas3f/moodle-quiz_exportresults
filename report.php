@@ -337,6 +337,8 @@ class quiz_exportresults_report extends quiz_default_report {
     // Start xml
     $xml = '';
 
+    var_dump($array);
+
     // Loop array
     foreach($array as $key=>$info) {
       // Check declaration
