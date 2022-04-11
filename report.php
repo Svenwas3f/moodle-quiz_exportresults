@@ -167,6 +167,8 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][3]["val"][0]["att"]["style:name"] = 'Standard';
             $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
 
+            var_dump($content);
+
             // Generate odt and add to export
             $odt = $this->odt(($content ?? array()), $meta, array(), $styles);
 
