@@ -134,7 +134,12 @@ class quiz_exportresults_form extends moodleform {
       'Arial' => 'Arial',
       'Times New Roman' => 'Times New Roman',
     );
-    $fontfamily = $mform->addElement('select', 'fontfamily', get_string('exportresults_fileoption_fontfamily', 'quiz_exportresults'), $options);
+    $fontfamily = $mform->addElement('select',
+                                      'fontfamily',
+                                      get_string('exportresults_fileoption_fontfamily',
+                                      'quiz_exportresults'),
+                                      $options
+                                    );
     $fontfamily->setSelected('Arial');
 
     // Line height
