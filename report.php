@@ -136,23 +136,29 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Arial';
             $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Arial';
 
+            $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt";
+            $lineheight = floatval($data->lineheight) * 100 . "%";
             $styles[0]["val"][1]["name"] = 'office:styles';
             $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
             $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
             $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = '20pt'; // Fontsize
+            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = $fontsize; // Fontsize
             $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = 'Arial'; // Font family
             $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = '180%'; // line height
+            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
 
+            $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Prepare values
+            $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Prepare values
+            $marginbottom = preg_match('/[a-z]/i', $data->marginbottom) ? $data->marginbottom : $data->marginbottom . "cm"; // Prepare values
+            $marginleft = preg_match('/[a-z]/i', $data->marginleft) ? $data->marginleft : $data->marginleft . "cm"; // Prepare values
             $styles[0]["val"][2]["name"] = 'office:automatic-styles';
             $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
             $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
             $styles[0]["val"][2]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottm"] = '5cm'; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = '5cm'; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = '5cm'; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = '5cm'; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottm"] = $margintop; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = $marginright; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = $marginbottom; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = $marginleft; // Margin
 
             $styles[0]["val"][3]["name"] = 'office:master-styles';
             $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
