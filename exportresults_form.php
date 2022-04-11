@@ -73,7 +73,7 @@ class quiz_exportresults_form extends moodleform {
                       'select',
                       'groups',
                       get_string('exportresults_exportoptions_select_groups', 'quiz_exportresults'),
-                      $options
+                      $options ?? null,
                     );
       $groupselect->setMultiple(true);
     }
