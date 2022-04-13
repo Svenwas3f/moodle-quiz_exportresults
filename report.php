@@ -160,10 +160,10 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
             $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
             $styles[0]["val"][2]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottm"] = $margintop; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = $marginright; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = $marginbottom; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = $marginleft; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = $margintop; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = $marginright; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottom"] = $marginbottom; // Margin
+            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = $marginleft; // Margin
 
             $styles[0]["val"][3]["name"] = 'office:master-styles';
             $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
