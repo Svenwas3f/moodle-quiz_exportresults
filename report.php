@@ -104,11 +104,11 @@ class quiz_exportresults_report extends quiz_default_report {
 
             // Prepare values for odt
             $lineheight = floatval($data->lineheight) * 100 . "%";
-            //$content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
-            //$content[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:style';
-            //$content[0]["val"][0]["val"][1]["val"][0]["att"]["style:name"] = 'Standard';
-            //$content[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            //$content[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            $content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
+            $content[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:style';
+            $content[0]["val"][0]["val"][1]["val"][0]["att"]["style:name"] = 'Standard';
+            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
             
             $count = 0;
             foreach($questions as $question) {
@@ -238,6 +238,8 @@ class quiz_exportresults_report extends quiz_default_report {
     $content[0]["att"] = array(
                           'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
                           'xmlns:text' => 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
+                          'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',  
                           'office:version' => 1.2,
                         );
     $content[0]["val"][0]["name"] = 'office:body';
