@@ -104,28 +104,28 @@ class quiz_exportresults_report extends quiz_default_report {
 
             // Prepare values for odt
             $lineheight = floatval($data->lineheight) * 100 . "%";
-            $content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
-            $content[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:style';
-            $content[0]["val"][0]["val"][1]["val"][0]["att"]["style:name"] = 'Standard';
-            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            $content[0]["val"][0]["val"][0]["name"] = 'office:automatic-styles';
+            $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:style';
+            $content[0]["val"][0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
+            $content[0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+            $content[0]["val"][0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
             
             $count = 0;
             foreach($questions as $question) {
               if($data->questions == 1) {
                 foreach(preg_split("/\r\n|\n|\r/", $question->questionsummary) as $line) {
-                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                  $content[0]["val"][0]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                  $content[0]["val"][0]["val"][1]["val"][$count]["name"] = 'text:p';
+                  $content[0]["val"][0]["val"][1]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                  $content[0]["val"][0]["val"][1]["val"][$count]["val"] = $line;
                   $count++;
                 }
               }
 
               // Display response
               foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                $content[0]["val"][0]["val"][1]["val"][$count]["name"] = 'text:p';
+                $content[0]["val"][0]["val"][1]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                $content[0]["val"][0]["val"][1]["val"][$count]["val"] = $line;
                 $count++;
               }
             }
@@ -242,8 +242,8 @@ class quiz_exportresults_report extends quiz_default_report {
                           'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',  
                           'office:version' => 1.2,
                         );
-    $content[0]["val"][0]["name"] = 'office:body';
-    $content[0]["val"][0]["val"][0]["name"] = 'office:text';
+    $content[0]["val"][1]["name"] = 'office:body';
+    //$content[0]["val"][0]["val"][0]["name"] = 'office:text';
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
