@@ -104,11 +104,11 @@ class quiz_exportresults_report extends quiz_default_report {
 
             // Prepare values for odt
             $lineheight = floatval($data->lineheight) * 100 . "%";
-            $content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
-            $content[0]["val"][0]["val"][1]["val"][0]["name"] = 'office:style';
-            $content[0]["val"][0]["val"][1]["val"][0]["att"]["style:name"] = 'Standard';
-            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $content[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            //$content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
+            //$content[0]["val"][0]["val"][1]["val"][0]["name"] = 'style:style';
+            //$content[0]["val"][0]["val"][1]["val"][0]["att"]["style:name"] = 'Standard';
+            //$content[0]["val"][0]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+            //$content[0]["val"][0]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
             
             $count = 0;
             foreach($questions as $question) {
