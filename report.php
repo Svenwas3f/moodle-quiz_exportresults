@@ -104,11 +104,11 @@ class quiz_exportresults_report extends quiz_default_report {
 
             // Prepare values for odt
             $lineheight = floatval($data->lineheight) * 100 . "%";
-            $content[0]["val"][0]["val"][0]["name"] = 'office:automatic-styles';
-            $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:style';
-            $content[0]["val"][0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
-            $content[0]["val"][0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $content[0]["val"][0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            $content[0]["val"][0]["name"] = 'office:automatic-styles';
+            $content[0]["val"][0]["val"][0]["name"] = 'style:style';
+            $content[0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
+            $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+            $content[0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
             
             $count = 0;
             foreach($questions as $question) {
@@ -243,7 +243,7 @@ class quiz_exportresults_report extends quiz_default_report {
                           'office:version' => 1.2,
                         );
     $content[0]["val"][1]["name"] = 'office:body';
-    $content[0]["val"][0]["val"][0]["name"] = 'office:text';
+    $content[0]["val"][1]["val"][0]["name"] = 'office:text';
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
