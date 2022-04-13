@@ -123,9 +123,9 @@ class quiz_exportresults_report extends quiz_default_report {
 
               // Display response
               foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                $content[0]["val"][0]["val"][1]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][1]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                $content[0]["val"][0]["val"][1]["val"][$count]["val"] = $line;
+                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
+                $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
+                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
                 $count++;
               }
             }
