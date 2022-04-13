@@ -133,6 +133,7 @@ class quiz_exportresults_form extends moodleform {
     $options = array(
       'Arial' => 'Arial',
       'Times New Roman' => 'Times New Roman',
+      'Frutiger LT Com 55 Roman' => 'Frutiger LT Com 55 Roman',
     );
     $fontfamily = $mform->addElement('select',
                                       'fontfamily',
