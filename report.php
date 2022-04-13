@@ -98,21 +98,29 @@ class quiz_exportresults_report extends quiz_default_report {
           }
 
           // Get acctual value
-          foreach($attempts as $attempt) {        
+          foreach($attempts as $attempt) {
             $params['questionusageid'] = $attempt->uniqueid; // uniqueid
             $questions = $DB->get_records_select('question_attempts', 'questionusageid=:questionusageid', $params, 'timemodified DESC'); // Request attempts
 
             // Prepare values for odt
-            $lineheight = floatval($data->lineheight) * 100 . "%";
+            $lineheight = floatval($data->lineheight) * 100 . "%"; // Line height
+            $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt"; // Font size
+            $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Margin
+            $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Margin
+            $marginbottom = preg_match('/[a-z]/i', $data->marginbottom) ? $data->marginbottom : $data->marginbottom . "cm"; // Margin
+            $marginleft = preg_match('/[a-z]/i', $data->marginleft) ? $data->marginleft : $data->marginleft . "cm"; // Margin
+
+            // Word support for line height
             $content[0]["val"][0]["name"] = 'office:automatic-styles';
             $content[0]["val"][0]["val"][0]["name"] = 'style:style';
             $content[0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
             $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
             $content[0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
-            
+
+            // Content
             $content[0]["val"][1]["name"] = 'office:body';
             $content[0]["val"][1]["val"][0]["name"] = 'office:text';
-            
+
             $count = 0;
             foreach($questions as $question) {
               if($data->questions == 1) {
@@ -151,7 +159,6 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Frutiger LT Com 55 Roman';
             $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Frutiger LT Com 55 Roman';
 
-            $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt";
             $styles[0]["val"][1]["name"] = 'office:styles';
             $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
             $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
@@ -161,10 +168,6 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][1]["val"][0]["val"][1]["name"] = 'style:paragraph-properties';
             $styles[0]["val"][1]["val"][0]["val"][1]["att"]['fo:line-height'] = $lineheight; // line height
 
-            $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Prepare values
-            $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Prepare values
-            $marginbottom = preg_match('/[a-z]/i', $data->marginbottom) ? $data->marginbottom : $data->marginbottom . "cm"; // Prepare values
-            $marginleft = preg_match('/[a-z]/i', $data->marginleft) ? $data->marginleft : $data->marginleft . "cm"; // Prepare values
             $styles[0]["val"][2]["name"] = 'office:automatic-styles';
             $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
             $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
@@ -242,7 +245,7 @@ class quiz_exportresults_report extends quiz_default_report {
                           'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
                           'xmlns:text' => 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
                           'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
-                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',  
+                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
                           'office:version' => 1.2,
                         );
 
