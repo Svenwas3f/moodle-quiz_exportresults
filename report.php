@@ -103,6 +103,7 @@ class quiz_exportresults_report extends quiz_default_report {
             $questions = $DB->get_records_select('question_attempts', 'questionusageid=:questionusageid', $params, 'timemodified DESC'); // Request attempts
 
             // Prepare values for odt
+            $lineheight = floatval($data->lineheight) * 100 . "%";
             $content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
             $content[0]["val"][1]["val"][1]["val"][0]["name"] = 'offce:style';
             $content[0]["val"][1]["val"][1]["val"][0]["att"]["styel:name"] = 'Standard';
@@ -148,7 +149,6 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Frutiger LT Com 55 Roman';
 
             $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt";
-            $lineheight = floatval($data->lineheight) * 100 . "%";
             $styles[0]["val"][1]["name"] = 'office:styles';
             $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
             $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
