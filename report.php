@@ -99,6 +99,12 @@ class quiz_exportresults_report extends quiz_default_report {
 
           // Get acctual value
           foreach($attempts as $attempt) {
+            $content[0]["val"][0]["val"][1]["name"] = 'office:automatic-styles';
+            $content[0]["val"][1]["val"][1]["val"][0]["name"] = 'offce:style';
+            $content[0]["val"][1]["val"][1]["val"][0]["att"]["styel:name"] = 'Standard';
+            $content[0]["val"][1]["val"][1]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+            $content[0]["val"][1]["val"][1]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
+            
             $params['questionusageid'] = $attempt->uniqueid; // uniqueid
             $questions = $DB->get_records_select('question_attempts', 'questionusageid=:questionusageid', $params, 'timemodified DESC'); // Request attempts
 
