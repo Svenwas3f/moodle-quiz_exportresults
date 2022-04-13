@@ -100,7 +100,7 @@ class quiz_exportresults_report extends quiz_default_report {
           // Get acctual value
           foreach($attempts as $attempt) {
             $params['questionusageid'] = $attempt->uniqueid; // uniqueid
-            $questions = $DB->get_records_select('question_attempts', 'id=:id', $params, 'timemodified DESC'); // Request attempts
+            $questions = $DB->get_records_select('question_attempts', 'questionusageid=:questionusageid', $params, 'timemodified DESC'); // Request attempts
 
             // Prepare values for odt
             $count = 0;
