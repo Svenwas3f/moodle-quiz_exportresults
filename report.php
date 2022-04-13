@@ -106,20 +106,26 @@ class quiz_exportresults_report extends quiz_default_report {
             $count = 0;
             foreach($questions as $question) {
               if($data->questions == 1) {
-                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $question->questionsummary;
-                $count++;
+                foreach(preg_split("/\r\n|\n|\r/", $question->questionsummary) as $line) {
+                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
+                  $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
+                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                  $count++;
+                }
 
-                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $question->responsesummary;
-                $count++;
+                foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
+                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
+                  $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
+                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                  $count++;
+                }
               }else {
-                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $question->responsesummary;
-                $count++;
+                foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
+                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
+                  $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
+                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                  $count++;
+                }
               }
             }
 
