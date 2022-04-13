@@ -112,20 +112,14 @@ class quiz_exportresults_report extends quiz_default_report {
                   $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
                   $count++;
                 }
+              }
 
-                foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                  $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
-                  $count++;
-                }
-              }else {
-                foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                  $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
-                  $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
-                  $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
-                  $count++;
-                }
+              // Display response
+              foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
+                $content[0]["val"][0]["val"][0]["val"][$count]["name"] = 'text:p';
+                $content[0]["val"][0]["val"][0]["val"][$count]["att"] = array('text:style-name' => 'Standard');
+                $content[0]["val"][0]["val"][0]["val"][$count]["val"] = $line;
+                $count++;
               }
             }
 
@@ -143,6 +137,9 @@ class quiz_exportresults_report extends quiz_default_report {
             $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
             $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Arial';
             $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Arial';
+            $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
+            $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Frutiger LT Com 55 Roman';
+            $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Frutiger LT Com 55 Roman';
 
             $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt";
             $lineheight = floatval($data->lineheight) * 100 . "%";
