@@ -85,7 +85,7 @@ class quiz_exportresults_form extends moodleform {
       get_string('exportresults_exportoptions_checkbox_question', 'quiz_exportresults'),
       get_string('exportresults_exportoptions_checkbox_question_label', 'quiz_exportresults')
     );
-    $mform->setDefault('include_questions', 1);
+    $mform->setDefault('questions', 1);
 
     ///////////////////////////////// File settings /////////////////////////////////
     $mform->addElement('header',
