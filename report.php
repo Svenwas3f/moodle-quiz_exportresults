@@ -241,7 +241,7 @@ class quiz_exportresults_report extends quiz_default_report {
                           'office:version' => 1.2,
                         );
     $content[0]["val"][0]["name"] = 'office:body';
-    $content[0]["val"][0]["val"][0]["name"] = 'office:text';
+    $content[0]["val"][0]["val"][1]["name"] = 'office:text';
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
