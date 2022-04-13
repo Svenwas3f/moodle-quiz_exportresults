@@ -114,18 +114,18 @@ class quiz_exportresults_report extends quiz_default_report {
             foreach($questions as $question) {
               if($data->questions == 1) {
                 foreach(preg_split("/\r\n|\n|\r/", $question->questionsummary) as $line) {
-                  $content[0]["val"][0]["val"][1]["val"][$count]["name"] = 'text:p';
-                  $content[0]["val"][0]["val"][1]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                  $content[0]["val"][0]["val"][1]["val"][$count]["val"] = $line;
+                  $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
+                  $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                  $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
                   $count++;
                 }
               }
 
               // Display response
               foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                $content[0]["val"][0]["val"][1]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][0]["val"][1]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                $content[0]["val"][0]["val"][1]["val"][$count]["val"] = $line;
+                $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
+                $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
                 $count++;
               }
             }
@@ -243,7 +243,7 @@ class quiz_exportresults_report extends quiz_default_report {
                           'office:version' => 1.2,
                         );
     $content[0]["val"][1]["name"] = 'office:body';
-    //$content[0]["val"][0]["val"][0]["name"] = 'office:text';
+    $content[0]["val"][0]["val"][0]["name"] = 'office:text';
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
