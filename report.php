@@ -110,6 +110,9 @@ class quiz_exportresults_report extends quiz_default_report {
             $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
             $content[0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
             
+            $content[0]["val"][1]["name"] = 'office:body';
+            $content[0]["val"][1]["val"][0]["name"] = 'office:text';
+            
             $count = 0;
             foreach($questions as $question) {
               if($data->questions == 1) {
@@ -242,8 +245,6 @@ class quiz_exportresults_report extends quiz_default_report {
                           'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',  
                           'office:version' => 1.2,
                         );
-    $content[0]["val"][1]["name"] = 'office:body';
-    $content[0]["val"][1]["val"][0]["name"] = 'office:text';
 
     // Default array for meta.xml
     $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
