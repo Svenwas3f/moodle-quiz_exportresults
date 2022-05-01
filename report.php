@@ -20,374 +20,445 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/mod/quiz/report/exportresults/exportresults_form.php');
 
 class quiz_exportresults_report extends quiz_default_report {
-  /**
-   * Function to display report
-   * @param $cm the course-module for this quiz.
-   * @param $course the coures we are in.
-   * @param $quiz this quiz.
-   */
-  public function display($quiz, $cm, $course) {
-    // Get database
-    global $DB, $PAGE, $context;
+    /**
+     * Function to display report
+     * @param $cm the course-module for this quiz.
+     * @param $course the coures we are in.
+     * @param $quiz this quiz.
+     */
+    public function display($quiz, $cm, $course) {
+        // Get global variables.
+        global $DB, $PAGE, $context;
 
-    // Initialise form
-    $mform = new quiz_exportresults_form($PAGE->url);
+        // Initialise moodle form.
+        $mform = new quiz_exportresults_form($PAGE->url);
 
-    // Check if export requested
-    if($data = $mform->get_data()) {
-      // Check if groups activated
-      if(groups_get_course_groupmode($course) == false || empty($data->groups)) {
-        $groups = array((object) array("id" => 0, "courseid" => $course->id, "name" => $course->fullname) ); // No groups activated
-      }else {
-        foreach($data->groups as $group) {
-          $groups[] = groups_get_group($group);
-        }
-      }
-
-      /////////////////////////// Generate export ///////////////////////////
-      $path = make_request_directory() . "/sexporsubmissionplugin/export/";
-      $filename = 'export.zip';
-      mkdir($path, 0777, true); // Generate temp path
-
-      $export = new ZipArchive();
-      $export->open($path . $filename, ZipArchive::CREATE); // Initialise zip
-
-      // Loop groups
-      foreach($groups as $group) {
-        // Add folder to export zip
-        $export->addEmptyDir($group->name);
-
-        // Handle attempts
-        if(groups_get_course_groupmode($course) == false || empty($data->groups)) {
-          $members = get_enrolled_users($context); // Get members of course
-        }else {
-          $members = groups_get_members($group->id); // Get members of group
-        }
-
-        foreach($members as $member) {
-          // Options: highest grade, first attempt, last attempts, all attempts
-          switch($data->attempts) {
-            case 'highest': // Highest attempt
-              $params['quiz'] = $quiz->id; // Quiz ID
-              $params['userid'] = $member->id; // User ID
-
-              $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'sumgrades DESC', '*', 0, 1); // Request attempts
-              break;
-            case 'first': // first attempt
-              $params['quiz'] = $quiz->id; // Quiz ID
-              $params['userid'] = $member->id; // User ID
-
-              $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt ASC', '*', 0, 1); // Request attempts
-              break;
-            case 'last': // Last attempt
-              $params['quiz'] = $quiz->id; // Quiz ID
-              $params['userid'] = $member->id; // User ID
-
-              $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC', '*', 0, 1); // Request attempts
-              break;
-            case 'all': // All attempts
-            default:
-              $params['quiz'] = $quiz->id; // Quiz ID
-              $params['userid'] = $member->id; // User ID
-
-              $attempts = $DB->get_records_select('quiz_attempts', 'quiz=:quiz AND userid=:userid', $params, 'attempt DESC'); // Request attempts
-              break;
-          }
-
-          // Get acctual value
-          foreach($attempts as $attempt) {
-            $params['questionusageid'] = $attempt->uniqueid; // uniqueid
-            $questions = $DB->get_records_select('question_attempts', 'questionusageid=:questionusageid', $params, 'timemodified DESC'); // Request attempts
-
-            // Prepare values for odt
-            $lineheight = floatval($data->lineheight) * 100 . "%"; // Line height
-            $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt"; // Font size
-            $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Margin
-            $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Margin
-            $marginbottom = preg_match('/[a-z]/i', $data->marginbottom) ? $data->marginbottom : $data->marginbottom . "cm"; // Margin
-            $marginleft = preg_match('/[a-z]/i', $data->marginleft) ? $data->marginleft : $data->marginleft . "cm"; // Margin
-
-            // Word support for line height
-            $content[0]["val"][0]["name"] = 'office:automatic-styles';
-            $content[0]["val"][0]["val"][0]["name"] = 'style:style';
-            $content[0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
-            $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
-            $content[0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // line height
-
-            // Content
-            $content[0]["val"][1]["name"] = 'office:body';
-            $content[0]["val"][1]["val"][0]["name"] = 'office:text';
-
-            $count = 0;
-            foreach($questions as $question) {
-              if($data->questions == 1) {
-                foreach(preg_split("/\r\n|\n|\r/", $question->questionsummary) as $line) {
-                  $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
-                  $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                  $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
-                  $count++;
+        // Check if export requested.
+        if ($data = $mform->get_data()) {
+            // Check if groups activated.
+            if (groups_get_course_groupmode($course) == false || empty($data->groups)) {
+                $groups = array(
+                    (object) array(
+                        "id" => 0,
+                        "courseid" => $course->id,
+                        "name" => $course->fullname)
+                    ); // Values if groupmode is  deactivated.
+            } else {
+                foreach ($data->groups as $group) {
+                    $groups[] = groups_get_group($group);
                 }
-              }
-
-              // Display response
-              foreach(preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
-                $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
-                $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
-                $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
-                $count++;
-              }
             }
 
-            $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
-            $meta[0]["val"][0]["val"][0]["val"] = 'Moodle Exportresults Plugin';
-            $meta[0]["val"][0]["val"][1]["name"] = 'meta:creation-date';
-            $meta[0]["val"][0]["val"][1]["val"] = date("Y-m-d\TH:i:sp");
-            $meta[0]["val"][0]["val"][3]["name"] = 'meta:creator';
-            $meta[0]["val"][0]["val"][3]["val"] = 'Moodle Exportresults Plugin';
+            /******************************** Generate export ********************************/
+            $path = make_request_directory() . "/sexporsubmissionplugin/export/";
+            $filename = 'export.zip';
+            mkdir($path, 0777, true); // Generate temp path.
 
-            $styles[0]["val"][0]["name"] = 'office:font-face-decls';
-            $styles[0]["val"][0]["val"][0]["name"] = 'style:font-face';
-            $styles[0]["val"][0]["val"][0]["att"]["style:name"] = 'Times New Roman';
-            $styles[0]["val"][0]["val"][0]["att"]["svg:font-family"] = '&apos;Times New Roman&apos;';
-            $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
-            $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Arial';
-            $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Arial';
-            $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
-            $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Frutiger LT Com 55 Roman';
-            $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Frutiger LT Com 55 Roman';
+            $export = new ZipArchive();
+            $export->open($path . $filename, ZipArchive::CREATE); // Initialise ZIP-Archive.
 
-            $styles[0]["val"][1]["name"] = 'office:styles';
-            $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
-            $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
-            $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = $fontsize; // Fontsize
-            $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = $data->fontfamily; // Font family
-            $styles[0]["val"][1]["val"][0]["val"][1]["name"] = 'style:paragraph-properties';
-            $styles[0]["val"][1]["val"][0]["val"][1]["att"]['fo:line-height'] = $lineheight; // line height
+            // Loop groups.
+            foreach ($groups as $group) {
+                // Create empty group folder.
+                $export->addEmptyDir($group->name);
 
-            $styles[0]["val"][2]["name"] = 'office:automatic-styles';
-            $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
-            $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
-            $styles[0]["val"][2]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = $margintop; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = $marginright; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottom"] = $marginbottom; // Margin
-            $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = $marginleft; // Margin
+                // Handle attempts by groups.
+                if (groups_get_course_groupmode($course) == false || empty($data->groups)) {
+                    $members = get_enrolled_users($context); // Get members of course.
+                } else {
+                    $members = groups_get_members($group->id); // Get members of group.
+                }
 
-            $styles[0]["val"][3]["name"] = 'office:master-styles';
-            $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
-            $styles[0]["val"][3]["val"][0]["att"]["style:name"] = 'Standard';
-            $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
+                foreach ($members as $member) {
+                    // The following options are valid: highest grade, first attempt, last attempts, all attempts.
+                    switch ($data->attempts) {
+                        case 'highest': // Highest attempt selected.
+                            $params['quiz'] = $quiz->id; // Store quiz-ID.
+                            $params['userid'] = $member->id; // Store user-ID.
 
-            // Generate odt and add to export
-            $odt = $this->odt(($content ?? array()), $meta, array(), $styles);
+                            $attempts = $DB->get_records_select(
+                                'quiz_attempts',
+                                'quiz=:quiz AND userid=:userid',
+                                $params,
+                                'sumgrades DESC',
+                                '*',
+                                0,
+                                1
+                            ); // Request attempts.
+                        break;
+                        case 'first': // First attempt selected.
+                            $params['quiz'] = $quiz->id; // Store quiz-ID.
+                            $params['userid'] = $member->id; // Store user-ID.
 
-            $pattern = '/[^A-Za-z0-9-_]/'; // Pattern to secure filename
-            $export->addFile($odt, $group->name . "/" . preg_replace($pattern, '', $member->username) . "_" . preg_replace($pattern, '', $member->firstname) . "_" . preg_replace($pattern, '', $member->lastname) . ".odt");
-          }
+                            $attempts = $DB->get_records_select(
+                                'quiz_attempts',
+                                'quiz=:quiz AND userid=:userid',
+                                $params,
+                                'attempt ASC',
+                                '*',
+                                0,
+                                1
+                            ); // Request attempts.
+                        break;
+                        case 'last': // Last attempt selected.
+                            $params['quiz'] = $quiz->id; // Store quiz-ID.
+                            $params['userid'] = $member->id; // Store user-ID.
+
+                            $attempts = $DB->get_records_select(
+                                'quiz_attempts',
+                                'quiz=:quiz AND userid=:userid',
+                                $params,
+                                'attempt DESC',
+                                '*',
+                                0,
+                                1
+                            ); // Request attempts.
+                        break;
+                        case 'all': // All attempts selected.
+                        default:
+                            $params['quiz'] = $quiz->id; // Store quiz-ID.
+                            $params['userid'] = $member->id; // Store user-ID.
+
+                            $attempts = $DB->get_records_select(
+                                'quiz_attempts',
+                                'quiz=:quiz AND userid=:userid',
+                                $params,
+                                'attempt DESC'
+                            ); // Request attempts.
+                        break;
+                    }
+
+                    // Loop attempts.
+                    foreach ($attempts as $attempt) {
+                        $params['questionusageid'] = $attempt->uniqueid; // Get attempt id.
+                        $questions = $DB->get_records_select(
+                            'question_attempts',
+                            'questionusageid=:questionusageid',
+                            $params,
+                            'timemodified DESC'
+                        ); // Request attempts.
+
+                        // Prepare values for odt.
+                        $lineheight = floatval($data->lineheight) * 100 . "%"; // Line-height.
+                        $fontsize = preg_match('/[a-z]/i', $data->fontsize) ? $data->fontsize : $data->fontsize . "pt"; // Font-size.
+                        $margintop = preg_match('/[a-z]/i', $data->margintop) ? $data->margintop : $data->margintop . "cm"; // Margin-top.
+                        $marginright = preg_match('/[a-z]/i', $data->marginright) ? $data->marginright : $data->marginright . "cm"; // Margin-right.
+                        $marginbottom = preg_match('/[a-z]/i', $data->marginbottom) ? $data->marginbottom : $data->marginbottom . "cm"; // Margin-bottom.
+                        $marginleft = preg_match('/[a-z]/i', $data->marginleft) ? $data->marginleft : $data->marginleft . "cm"; // Margin-left.
+
+                        // Word support for line height.
+                        $content[0]["val"][0]["name"] = 'office:automatic-styles';
+                        $content[0]["val"][0]["val"][0]["name"] = 'style:style';
+                        $content[0]["val"][0]["val"][0]["att"]["style:name"] = 'Standard';
+                        $content[0]["val"][0]["val"][0]["val"][0]["name"] = 'style:paragraph-properties';
+                        $content[0]["val"][0]["val"][0]["val"][0]["att"]['fo:line-height'] = $lineheight; // Line-height option.
+
+                        // Values for content.
+                        $content[0]["val"][1]["name"] = 'office:body';
+                        $content[0]["val"][1]["val"][0]["name"] = 'office:text';
+
+                        $count = 0;
+                        foreach ($questions as $question) {
+                            if ($data->questions == 1) {
+                                foreach (preg_split("/\r\n|\n|\r/", $question->questionsummary) as $line) {
+                                    $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
+                                    $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                                    $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
+                                    $count++;
+                                }
+                            }
+
+                            // Include attempt response.
+                            foreach (preg_split("/\r\n|\n|\r/", $question->responsesummary) as $line) {
+                                $content[0]["val"][1]["val"][0]["val"][$count]["name"] = 'text:p';
+                                $content[0]["val"][1]["val"][0]["val"][$count]["att"]["text:style-name"] = 'Standard';
+                                $content[0]["val"][1]["val"][0]["val"][$count]["val"] = $line;
+                                $count++;
+                            }
+                        }
+
+                        $meta[0]["val"][0]["val"][0]["name"] = 'meta:initial-creator';
+                        $meta[0]["val"][0]["val"][0]["val"] = 'Moodle Exportresults Plugin';
+                        $meta[0]["val"][0]["val"][1]["name"] = 'meta:creation-date';
+                        $meta[0]["val"][0]["val"][1]["val"] = date("Y-m-d\TH:i:sp");
+                        $meta[0]["val"][0]["val"][3]["name"] = 'meta:creator';
+                        $meta[0]["val"][0]["val"][3]["val"] = 'Moodle Exportresults Plugin';
+
+                        $styles[0]["val"][0]["name"] = 'office:font-face-decls';
+                        $styles[0]["val"][0]["val"][0]["name"] = 'style:font-face';
+                        $styles[0]["val"][0]["val"][0]["att"]["style:name"] = 'Times New Roman';
+                        $styles[0]["val"][0]["val"][0]["att"]["svg:font-family"] = '&apos;Times New Roman&apos;';
+                        $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
+                        $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Arial';
+                        $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Arial';
+                        $styles[0]["val"][0]["val"][1]["name"] = 'style:font-face';
+                        $styles[0]["val"][0]["val"][1]["att"]["style:name"] = 'Frutiger LT Com 55 Roman';
+                        $styles[0]["val"][0]["val"][1]["att"]["svg:font-family"] = 'Frutiger LT Com 55 Roman';
+
+                        $styles[0]["val"][1]["name"] = 'office:styles';
+                        $styles[0]["val"][1]["val"][0]["name"] = 'style:default-style';
+                        $styles[0]["val"][1]["val"][0]["att"]["style:family"] = 'paragraph';
+                        $styles[0]["val"][1]["val"][0]["val"][0]["name"] = 'style:text-properties';
+                        $styles[0]["val"][1]["val"][0]["val"][0]["att"]['fo:font-size'] = $fontsize; // Font-size option.
+                        $styles[0]["val"][1]["val"][0]["val"][0]["att"]['style:font-name'] = $data->fontfamily; // Font-family option.
+                        $styles[0]["val"][1]["val"][0]["val"][1]["name"] = 'style:paragraph-properties';
+                        $styles[0]["val"][1]["val"][0]["val"][1]["att"]['fo:line-height'] = $lineheight; // Line-height option.
+
+                        $styles[0]["val"][2]["name"] = 'office:automatic-styles';
+                        $styles[0]["val"][2]["val"][0]["name"] = 'style:page-layout';
+                        $styles[0]["val"][2]["val"][0]["att"]["style:name"] = 'mdl1';
+                        $styles[0]["val"][2]["val"][0]["val"][0]["name"] = 'style:page-layout-properties';
+                        $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-top"] = $margintop; // Margin-top option.
+                        $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-right"] = $marginright; // Margin-right option.
+                        $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-bottom"] = $marginbottom; // Margin-bottom option.
+                        $styles[0]["val"][2]["val"][0]["val"][0]["att"]["fo:margin-left"] = $marginleft; // Margin-left option.
+
+                        $styles[0]["val"][3]["name"] = 'office:master-styles';
+                        $styles[0]["val"][3]["val"][0]["name"] = 'style:master-page';
+                        $styles[0]["val"][3]["val"][0]["att"]["style:name"] = 'Standard';
+                        $styles[0]["val"][3]["val"][0]["att"]["style:page-layout-name"] = 'mdl1';
+
+                        // Generate odt and add to export.
+                        $odt = $this->odt(($content ?? array()), $meta, array(), $styles);
+
+                        $pattern = '/[^A-Za-z0-9-_]/'; // Pattern to secure filename.
+                        $secuser = preg_replace($pattern, '', $member->username); // Secure username.
+                        $secname = preg_replace($pattern, '', $member->firstname); // Secure firname.
+                        $seclast = preg_replace($pattern, '', $member->lastname); // Secure lastname.
+
+                        $export->addFile(
+                            $odt,
+                            $group->name . "/" . $secuser . "_" . $secname . "_" . $seclast . ".odt"
+                        );
+                    }
+                }
+            }
+
+            // Convert to zip and enable downlod.
+            $export->close();
+
+            // Copy odt into download Zip.
+            $fs = get_file_storage();
+
+            // Prepare file record object.
+            $fileinfo = array(
+                'contextid' => $context->id,
+                'component' => 'quiz_exportresults',
+                'filearea' => 'export',
+                'itemid' => $quiz->id,
+                'filepath' => '/',
+                'filename' => 'export.zip'
+            );
+
+            if ($fs->file_exists(
+                $fileinfo["contextid"],
+                $fileinfo["component"],
+                $fileinfo["filearea"],
+                $fileinfo["itemid"],
+                $fileinfo["filepath"],
+                $fileinfo["filename"]
+            )) {
+                $fs->get_file(
+                    $fileinfo['contextid'],
+                    $fileinfo['component'],
+                    $fileinfo['filearea'],
+                    $fileinfo['itemid'],
+                    $fileinfo['filepath'],
+                    $fileinfo['filename']
+                )->delete(); // Remove file.
+            }
+
+            // Create file in File API.
+            $exportfile = $fs->create_file_from_pathname($fileinfo, $path . $filename);
+
+            // Serve to user.
+            send_stored_file($exportfile, 86400, 0, true);
         }
-      }
 
-      // Convert to zip and enable downlod
-      $export->close();
+        // Display default headers and tabs.
+        $this->print_header_and_tabs($cm, $course, $quiz, 'quiz_exportresults');
 
-      // Copy odt into download Zip
-      $fs = get_file_storage();
+        // Display notification.
+        if (!quiz_has_attempts($quiz->id)) {
+            \core\notification::error( get_string('exportresults_no_attempts', 'quiz_exportresults') );
+        }
 
-      // Prepare file record object
-      $fileinfo = array(
-          'contextid' => $context->id,         // ID of context
-          'component' => 'quiz_exportresults', // usually = table name
-          'filearea' => 'export',              // usually = table name
-          'itemid' => $quiz->id,               // usually = ID of row in table
-          'filepath' => '/',                   // any path beginning and ending in /
-          'filename' => 'export.zip');         // any filename
-
-      if($fs->file_exists($fileinfo["contextid"], $fileinfo["component"], $fileinfo["filearea"], $fileinfo["itemid"], $fileinfo["filepath"], $fileinfo["filename"])) {
-        $fs->get_file($fileinfo['contextid'], $fileinfo['component'], $fileinfo['filearea'], $fileinfo['itemid'], $fileinfo['filepath'], $fileinfo['filename'])->delete(); // Remove file
-      }
-
-      // Create file in File API
-      $exportfile = $fs->create_file_from_pathname($fileinfo, $path . $filename);
-
-      // Serve to user
-      send_stored_file($exportfile, 86400, 0, true);
+        // Display form.
+        $mform->display();
     }
 
-    // Display page
-    $this->print_header_and_tabs($cm, $course, $quiz, 'quiz_exportresults');
+    /**
+     * Function to generate odt file
+     * @param array $newcontent
+     * @param array $newmeta
+     * @param array $newsettings
+     * @param array $newstyles
+     * @return string filepath
+     */
+    protected function odt($newcontent = array(), $newmeta = array(), $newsettings = array(), $newstyles = array()) {
+        // Default array for content.xml.
+        $content["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $content[0]["name"] = 'office:document-content';
+        $content[0]["att"] = array(
+            'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+            'xmlns:text' => 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
+            'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+            'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+            'office:version' => 1.2,
+            );
 
-    // Display notification
-    if(!quiz_has_attempts($quiz->id)) {
-      \core\notification::error( get_string('exportresults_no_attempts', 'quiz_exportresults') );
+        // Default array for meta.xml.
+        $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $meta[0]["name"] = 'office:document-meta';
+        $meta[0]["att"] = array(
+            'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+            'xmlns:meta' => 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0',
+            'office:version' => 1.2,
+        );
+        $meta[0]["val"][0]["name"] = 'office:meta';
+
+        // Default array for settings.xml.
+        $settings["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $settings[0]["name"] = 'office:document-settings';
+        $settings[0]["att"] = array(
+            'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+            'xmlns:config' => 'urn:oasis:names:tc:opendocument:xmlns:config:1.0',
+            'office:version' => 1.2,
+        );
+        $settings[0]["val"][0]["name"] = 'office:settings';
+
+        // Default array for styles.xml.
+        $styles["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $styles[0]["name"] = 'office:document-styles';
+        $styles[0]["att"] = array(
+            'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+            'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+            'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+            'xmlns:svg' => 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0',
+            'office:version' => 1.2,
+        );
+
+        // Default array for META-INF/manifest.xml.
+        $manifest["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
+        $manifest[0]["name"] = 'manifest:manifest';
+        $manifest[0]["att"] = array(
+            'xmlns:manifest' => 'urn:oasis:names:tc:opendocument:xmlns:manifest:1.0',
+            'manifest:version' => 1.2,
+        );
+        $manifest[0]["val"][0]["name"] = 'manifest:file-entry';
+        $manifest[0]["val"][0]["att"] = array(
+            'manifest:media-type' => 'application/vnd.oasis.opendocument.text',
+            'manifest:version' => 1.2,
+            'manifest:full-path' => '/',
+        );
+        $manifest[0]["val"][1]["name"] = 'manifest:file-entry';
+        $manifest[0]["val"][1]["att"] = array(
+            'manifest:media-type' => 'text/xml',
+            'manifest:full-path' => 'content.xml',
+        );
+        $manifest[0]["val"][2]["name"] = 'manifest:file-entry';
+        $manifest[0]["val"][2]["att"] = array(
+            'manifest:media-type' => 'text/xml',
+            'manifest:full-path' => 'settings.xml',
+        );
+        $manifest[0]["val"][3]["name"] = 'manifest:file-entry';
+        $manifest[0]["val"][3]["att"] = array(
+            'manifest:media-type' => 'text/xml',
+            'manifest:full-path' => 'styles.xml',
+        );
+        $manifest[0]["val"][4]["name"] = 'manifest:file-entry';
+        $manifest[0]["val"][4]["att"] = array(
+            'manifest:media-type' => 'text/xml',
+            'manifest:full-path' => 'meta.xml',
+        );
+
+        // Replace default array wiht custom.
+        $content = array_replace_recursive($content, $newcontent);
+        $meta = array_replace_recursive($meta, $newmeta);
+        $settings = array_replace_recursive($settings, $newsettings);
+        $styles = array_replace_recursive($styles, $newstyles);
+
+        // Generate xml files.
+        $path = make_request_directory() . "/exporsubmissionplugin/";
+        $filename = 'generated.odt';
+        mkdir($path, 0777, true); // Generate temp path.
+        $odt = new ZipArchive();
+        $odt->open($path . $filename, ZipArchive::CREATE); // Initialise zip/odt.
+
+        $odt->addFromString('content.xml', $this->array_to_xml($content)); // Generate content file.
+        $odt->addFromString('meta.xml', $this->array_to_xml($meta)); // Generate meta file.
+        $odt->addFromString('settings.xml', $this->array_to_xml($settings)); // Generate settings file.
+        $odt->addFromString('styles.xml', $this->array_to_xml($styles)); // Generate styles file.
+
+        $odt->addFromString('mimetype', 'application/vnd.oasis.opendocument.text'); // Generate mimetype file.
+
+        $odt->addEmptyDir("META-INF");
+        $odt->addFromString("META-INF/manifest.xml", $this->array_to_xml($manifest)); // Generate manifest file.
+
+        $odt->close();
+
+        // Return temp path to copy.
+        return $path . '/' . $filename;
     }
 
-    // Display form
-    $mform->display();
-  }
+    /**
+     * Function to generate xml
+     * @param array $array
+     * @return string xml string
+     */
+    private function array_to_xml($array) {
+        // Start xml.
+        $xml = '';
 
-  /**
-   * Function to generate odt file
-   * @param array $newcontent
-   * @param array $newmeta
-   * @param array $newsettings
-   * @param array $newstyles
-   * @return string filepath
-   */
-  protected function odt($newcontent = array(), $newmeta = array(), $newsettings = array(), $newstyles = array()) {
-    // Default array for content.xml
-    $content["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $content[0]["name"] = 'office:document-content';
-    $content[0]["att"] = array(
-                          'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
-                          'xmlns:text' => 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
-                          'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
-                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
-                          'office:version' => 1.2,
-                        );
+        // Loop array.
+        foreach ($array as $key => $info) {
+            // Check declaration.
+            if ($key === "declaration") {
+                $xml .= $info;
+            } else {
+                if (array_key_exists('att', $info) && is_array($info["att"])) {
+                    $atts = " "; // Initial whitspace.
+                    $atts .= implode(
+                        ' ',
+                        array_map(
+                            function ($v, $k) {
+                                return $k . '="' . $v . '"';
+                            },
+                            $info["att"],
+                            array_keys($info["att"])
+                        )
+                    ); // Get all attributes.
+                }
 
-    // Default array for meta.xml
-    $meta["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $meta[0]["name"] = 'office:document-meta';
-    $meta[0]["att"] = array(
-                          'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
-                          'xmlns:meta' => 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0',
-                          'office:version' => 1.2,
-                        );
-    $meta[0]["val"][0]["name"] = 'office:meta';
+                if (array_key_exists('val', $info) && empty($info["val"]) && $info["val"] != 0) {
+                    $endtag = false; // End has no closing tag.
+                } else {
+                    $endtag = true; // End requires closing tag.
+                }
 
-    // Default array for settings.xml
-    $settings["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $settings[0]["name"] = 'office:document-settings';
-    $settings[0]["att"] = array(
-                          'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
-                          'xmlns:config' => 'urn:oasis:names:tc:opendocument:xmlns:config:1.0',
-                          'office:version' => 1.2,
-                        );
-    $settings[0]["val"][0]["name"] = 'office:settings';
+                // Create tag.
+                $xml .= '<' . $info["name"] . ($atts ?? '') . ($endtag ? '>' : '/>');
 
-    // Default array for styles.xml
-    $styles["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $styles[0]["name"] = 'office:document-styles';
-    $styles[0]["att"] = array(
-                          'xmlns:office' => 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
-                          'xmlns:style' => 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
-                          'xmlns:fo' => 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
-                          'xmlns:svg' => 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0',
-                          'office:version' => 1.2,
-                        );
+                // Get value.
+                if (array_key_exists('val', $info) && is_array($info["val"])) {
+                    $xml .= $this->array_to_xml($info["val"]); // Display value.
+                } else if ($endtag) {
+                    $xml .= $info["val"] ?? '';
+                }
 
-    // Default array for META-INF/manifest.xml
-    $manifest["declaration"] = '<?xml version="1.0" encoding="UTF-8"?>';
-    $manifest[0]["name"] = 'manifest:manifest';
-    $manifest[0]["att"] = array(
-                          'xmlns:manifest' => 'urn:oasis:names:tc:opendocument:xmlns:manifest:1.0',
-                          'manifest:version' => 1.2,
-                        );
-    $manifest[0]["val"][0]["name"] = 'manifest:file-entry';
-    $manifest[0]["val"][0]["att"] = array(
-                                      'manifest:media-type' => 'application/vnd.oasis.opendocument.text',
-                                      'manifest:version' => 1.2,
-                                      'manifest:full-path' => '/',
-                                    );
-    $manifest[0]["val"][1]["name"] = 'manifest:file-entry';
-    $manifest[0]["val"][1]["att"] = array(
-                                      'manifest:media-type' => 'text/xml',
-                                      'manifest:full-path' => 'content.xml',
-                                    );
-    $manifest[0]["val"][2]["name"] = 'manifest:file-entry';
-    $manifest[0]["val"][2]["att"] = array(
-                                      'manifest:media-type' => 'text/xml',
-                                      'manifest:full-path' => 'settings.xml',
-                                    );
-    $manifest[0]["val"][3]["name"] = 'manifest:file-entry';
-    $manifest[0]["val"][3]["att"] = array(
-                                      'manifest:media-type' => 'text/xml',
-                                      'manifest:full-path' => 'styles.xml',
-                                    );
-    $manifest[0]["val"][4]["name"] = 'manifest:file-entry';
-    $manifest[0]["val"][4]["att"] = array(
-                                      'manifest:media-type' => 'text/xml',
-                                      'manifest:full-path' => 'meta.xml',
-                                    );
-
-    // Extend arrays
-    $content = array_replace_recursive($content, $newcontent);
-    $meta = array_replace_recursive($meta, $newmeta);
-    $settings = array_replace_recursive($settings, $newsettings);
-    $styles = array_replace_recursive($styles, $newstyles);
-
-    // Generate xml
-    $path = make_request_directory() . "/exporsubmissionplugin/";
-    $filename = 'generated.odt';
-    mkdir($path, 0777, true); // Generate temp path
-    $odt = new ZipArchive();
-    $odt->open($path . $filename, ZipArchive::CREATE); // Initialise zip/odt
-
-    $odt->addFromString('content.xml', $this->array_to_xml($content)); // Content
-    $odt->addFromString('meta.xml', $this->array_to_xml($meta)); // meta
-    $odt->addFromString('settings.xml', $this->array_to_xml($settings)); // settings
-    $odt->addFromString('styles.xml', $this->array_to_xml($styles)); // styles
-
-    $odt->addFromString('mimetype', 'application/vnd.oasis.opendocument.text'); // mimetype
-
-    $odt->addEmptyDir("META-INF");
-    $odt->addFromString("META-INF/manifest.xml", $this->array_to_xml($manifest));
-
-    $odt->close();
-
-    // Return temp path to copy
-    return $path . '/' . $filename;
-  }
-
-  /**
-   * Function to generate xml
-   * @param array $array
-   * @return string xml string
-   */
-  private function array_to_xml($array) {
-    // Start xml
-    $xml = '';
-
-    // Loop array
-    foreach($array as $key=>$info) {
-      // Check declaration
-      if($key === "declaration") {
-        $xml .= $info;
-      }else {
-        if(array_key_exists('att', $info) && is_array($info["att"])) {
-          $atts = " "; // Initial whitspace
-          $atts .= implode(' ', array_map(function ($v, $k) {return $k . '="' . $v . '"';}, $info["att"], array_keys($info["att"]))); // Get all attributes
+                // Add end tag.
+                if ($endtag) {
+                    $xml .= '</' . $info["name"] . '>';
+                }
+            }
         }
 
-        if(array_key_exists('val', $info) && empty($info["val"]) && $info["val"] != 0) {
-          $endTag = false; // End has no closing tag
-        }else {
-          $endTag = true; // End requires closing tag
-        }
-
-        // Create tag
-        $xml .= '<' . $info["name"] . ($atts ?? '') . ($endTag ? '>' : '/>');
-
-        // Get value
-        if(array_key_exists('val', $info) && is_array($info["val"])) {
-          $xml .= $this->array_to_xml($info["val"]); // Display value
-        }elseif($endTag) {
-          $xml .= $info["val"] ?? '';
-        }
-
-        // Add end tag
-        if($endTag) {
-          $xml .= '</' . $info["name"] . '>';
-        }
-      }
+        // Retrun full xml.
+        return $xml;
     }
-
-    // Retrun xml
-    return $xml;
-  }
 }
-?>
