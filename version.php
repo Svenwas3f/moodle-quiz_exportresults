@@ -23,8 +23,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 // https://docs.moodle.org/dev/version.php.
-$plugin->version = 2022040300;
+$plugin->version = 2022050100;
 $plugin->requires = 2014051200;
 $plugin->component = 'quiz_exportresults';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.0.0';
+$plugin->release = 'v1.0.1';
