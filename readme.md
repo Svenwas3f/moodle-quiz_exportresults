@@ -9,6 +9,6 @@ Install plugin to mod/quiz/reports via Moodle PluginDB https://moodle.org/plugin
  - Place the folder (eg "myreport") in the "mod/quiz/report" subdirectory.
  - Visit http://yoursite.com/admin to finish the installation  
 
-You can install using git. Type this commands in the root of your Moodle install.
+You can install using git. Type this commands in the root of your Moodle install.  
 `git clone https://github.com/Svenwas3f/moodle-quiz_exportresults.git mod/quiz/report/exportresults`  
 Then run the moodle update process Site administration > Notifications
