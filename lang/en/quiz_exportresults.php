@@ -26,6 +26,8 @@ $string["reportname"] = "exportresults";
 $string["namereport"] = "exportresults";
 $string["exportresults"] = "Export Results";
 
+$string['privacy:metadata'] = 'The quiz exportresults plugin only exports existing quiz data.';
+
 $string["exportresults_exportoptions_header"] = "General exportoptions";
 $string["exportresults_exportoptions_select_info"] = "Export attempts";
 $string["exportresults_exportoptions_option_highest_grade"] = "Highest grade";
