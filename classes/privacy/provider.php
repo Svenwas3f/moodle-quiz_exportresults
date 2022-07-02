@@ -18,7 +18,7 @@
  * @package   quiz_exportresults
  * @copyright 2022, Sven Waser <sven.waser@ksso.ch>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ */ 
 
  namespace quiz_exportresults\privacy;
 
